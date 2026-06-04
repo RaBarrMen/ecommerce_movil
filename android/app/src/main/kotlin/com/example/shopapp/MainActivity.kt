@@ -1,4 +1,4 @@
-package com.example.whatsapp_clone
+package com.example.shopapp
 
 import io.flutter.embedding.android.FlutterActivity
 
