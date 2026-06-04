@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.whatsapp_clone"
+    namespace = "com.example.shopapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.whatsapp_clone"
+        applicationId = "com.example.shopapp"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
