@@ -2,7 +2,7 @@ import 'dart:convert';
 import '../datasources/local/local_cache_datasource.dart';
 import '../models/cart_item_model.dart';
 import '../models/product_model.dart';
-import '../../../lib/core/constants/firebase_constants.dart';
+import 'package:ecommerce_movil/core/constants/firebase_constants.dart';
 
 abstract class CartRepository {
   List<CartItemModel> loadCart(List<ProductModel> availableProducts);

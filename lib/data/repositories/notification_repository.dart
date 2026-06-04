@@ -1,6 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../../../lib/core/constants/firebase_constants.dart';
+import 'package:ecommerce_movil/core/constants/firebase_constants.dart';
 
 abstract class NotificationRepository {
   Future<void> initialize();

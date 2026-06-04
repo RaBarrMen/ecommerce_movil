@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "885213847275",
+    "project_id": "ecommerce-f8c38",
+    "storage_bucket": "ecommerce-f8c38.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885213847275:android:2a6bb99c8147479da5a8ae",
+        "android_client_info": {
+          "package_name": "com.example.whatsapp_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDuPIUp88gfSdLjNoUYznMGnB4kdj4lkM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

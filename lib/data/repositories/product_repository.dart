@@ -3,7 +3,7 @@ import '../datasources/remote/firestore_datasource.dart';
 import '../datasources/local/local_cache_datasource.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
-import '../../../lib/core/constants/firebase_constants.dart';
+import 'package:ecommerce_movil/core/constants/firebase_constants.dart';
 
 abstract class ProductRepository {
   Future<List<ProductModel>> getProducts({String? categoryId});

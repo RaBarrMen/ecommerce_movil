@@ -8,7 +8,6 @@ enum ProductStatus { initial, loading, loaded, error }
 class ProductProvider extends ChangeNotifier {
   final ProductRepository productRepository;
   ProductProvider({required this.productRepository});
-
   ProductStatus _status = ProductStatus.initial;
   List<ProductModel> _products = [];
   List<ProductModel> _featured = [];
