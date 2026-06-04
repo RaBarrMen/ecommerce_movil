@@ -8,7 +8,6 @@ import '../../../providers/notification_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/routes/app_router.dart';
-import '../../../core/utils/responsive_helper.dart';
 import '../../../core/widgets/adaptive_layout.dart';
 import '../../../core/widgets/loading_widget.dart';
 import '../widgets/home_banner_widget.dart';

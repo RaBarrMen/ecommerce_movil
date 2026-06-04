@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../providers/cart_provider.dart';
-import '../../../providers/auth_provider.dart';
 import '../../../providers/order_provider.dart';
 import '../widgets/address_form_widget.dart';
 import '../widgets/order_summary_widget.dart';

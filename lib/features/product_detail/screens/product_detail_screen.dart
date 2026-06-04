@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../data/models/product_model.dart';
-import '../../../providers/cart_provider.dart';
 import '../widgets/product_image_gallery.dart';
 import '../widgets/add_to_cart_bar.dart';
 

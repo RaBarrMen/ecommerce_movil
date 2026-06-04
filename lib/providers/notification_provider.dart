@@ -7,7 +7,7 @@ class NotificationProvider extends ChangeNotifier {
   final NotificationRepository notificationRepository;
   NotificationProvider({required this.notificationRepository});
 
-  List<RemoteMessage> _messages = [];
+  final List<RemoteMessage> _messages = [];
   bool _isSubscribedToOffers = true;
   bool _isSubscribedToNewProducts = false;
   bool _isSubscribedToPromotions = false;
