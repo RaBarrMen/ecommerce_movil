@@ -13,6 +13,9 @@ abstract class FirestoreDatasource {
   Future<List<ProductModel>> getProducts({String? categoryId});
   Future<List<ProductModel>> getFeaturedProducts();
   Future<List<CategoryModel>> getCategories();
+  Future<void> createProduct(ProductModel product);
+  Future<void> updateProduct(String productId, Map<String, dynamic> data);
+  Future<void> deleteProduct(String productId);
   Future<String> createOrder(OrderModel order);
   Future<List<OrderModel>> getUserOrders(String userId);
   Future<List<NotificationModel>> getUserNotifications(String userId);
@@ -80,6 +83,36 @@ class FirestoreDatasourceImpl implements FirestoreDatasource {
     return snapshot.docs.map((d) => CategoryModel.fromFirestore(d)).toList();
   }
 
+  // ── CRUD Productos (Admin) ─────────────────────────────────────────────────
+
+  @override
+  Future<void> createProduct(ProductModel product) async {
+    await _db
+        .collection(FirebaseConstants.productsCollection)
+        .add(product.toMap()..['createdAt'] = FieldValue.serverTimestamp());
+  }
+
+  @override
+  Future<void> updateProduct(
+      String productId, Map<String, dynamic> data) async {
+    data['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .collection(FirebaseConstants.productsCollection)
+        .doc(productId)
+        .update(data);
+  }
+
+  /// Soft delete: marca isActive = false en lugar de borrar el documento.
+  @override
+  Future<void> deleteProduct(String productId) async {
+    await _db
+        .collection(FirebaseConstants.productsCollection)
+        .doc(productId)
+        .update({'isActive': false});
+  }
+
+  // ── Pedidos ────────────────────────────────────────────────────────────────
+
   @override
   Future<String> createOrder(OrderModel order) async {
     final ref = await _db
@@ -97,6 +130,8 @@ class FirestoreDatasourceImpl implements FirestoreDatasource {
         .get();
     return snapshot.docs.map((d) => OrderModel.fromFirestore(d)).toList();
   }
+
+  // ── Notificaciones ─────────────────────────────────────────────────────────
 
   @override
   Future<List<NotificationModel>> getUserNotifications(String userId) async {

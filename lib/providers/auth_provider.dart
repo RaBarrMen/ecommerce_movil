@@ -7,7 +7,9 @@ enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository authRepository;
+
   AuthProvider({required this.authRepository}) {
+    debugPrint('AuthProvider: constructor, iniciando listener de auth...');
     _listenToAuthChanges();
   }
 
@@ -22,21 +24,41 @@ class AuthProvider extends ChangeNotifier {
   bool get onboardingDone => authRepository.isOnboardingDone;
 
   void _listenToAuthChanges() {
-    authRepository.authStateChanges.listen((User? firebaseUser) {
-      if (firebaseUser != null) {
-        _user = UserModel(
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName ?? '',
-          email: firebaseUser.email ?? '',
-          photoUrl: firebaseUser.photoURL,
-        );
-        _status = AuthStatus.authenticated;
-      } else {
-        _user = null;
-        _status = AuthStatus.unauthenticated;
-      }
-      notifyListeners();
-    });
+    try {
+      authRepository.authStateChanges.listen(
+        (User? firebaseUser) {
+          if (firebaseUser != null) {
+            debugPrint('AuthProvider: usuario autenticado — ${firebaseUser.uid}');
+            _user = UserModel(
+              uid: firebaseUser.uid,
+              name: firebaseUser.displayName ?? '',
+              email: firebaseUser.email ?? '',
+              photoUrl: firebaseUser.photoURL,
+            );
+            _status = AuthStatus.authenticated;
+          } else {
+            debugPrint('AuthProvider: sin usuario (unauthenticated)');
+            _user = null;
+            _status = AuthStatus.unauthenticated;
+          }
+          notifyListeners();
+        },
+        onError: (e, st) {
+          // Captura errores del Stream (ej. Firebase no inicializado)
+          debugPrint('AuthProvider Stream ERROR: $e');
+          debugPrintStack(stackTrace: st);
+          _status = AuthStatus.error;
+          _errorMessage = e.toString();
+          notifyListeners();
+        },
+      );
+    } catch (e, st) {
+      // Captura si FirebaseAuth.instance lanza al crear el stream
+      debugPrint('AuthProvider _listenToAuthChanges ERROR: $e');
+      debugPrintStack(stackTrace: st);
+      _status = AuthStatus.error;
+      _errorMessage = e.toString();
+    }
   }
 
   Future<void> signInWithGoogle() async {
@@ -44,9 +66,13 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
+      debugPrint('AuthProvider: iniciando signInWithGoogle...');
       _user = await authRepository.signInWithGoogle();
       _status = AuthStatus.authenticated;
-    } catch (e) {
+      debugPrint('AuthProvider: signInWithGoogle OK — ${_user?.uid}');
+    } catch (e, st) {
+      debugPrint('AuthProvider signInWithGoogle ERROR: $e');
+      debugPrintStack(stackTrace: st);
       _status = AuthStatus.error;
       _errorMessage = e.toString();
     }
@@ -54,7 +80,11 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await authRepository.signOut();
+    try {
+      await authRepository.signOut();
+    } catch (e) {
+      debugPrint('AuthProvider signOut ERROR: $e');
+    }
     _user = null;
     _status = AuthStatus.unauthenticated;
     notifyListeners();

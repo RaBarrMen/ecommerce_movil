@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/product_provider.dart';
 import '../../../core/constants/app_strings.dart';
@@ -23,7 +24,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final p = context.read<ProductProvider>();
-      p.loadByCategory(widget.categoryFilter);
+      // Si ya hay datos cargados y no hay filtro de categoría, no recargar
+      // para evitar parpadeos innecesarios al volver con context.go()
+      if (p.status == ProductStatus.initial ||
+          p.selectedCategoryId != widget.categoryFilter) {
+        p.loadByCategory(widget.categoryFilter);
+      }
     });
   }
 
@@ -36,12 +42,38 @@ class _CatalogScreenState extends State<CatalogScreen> {
   @override
   Widget build(BuildContext context) {
     final cols = ResponsiveHelper.productGridColumns(context);
+
+    // canPop() es true si hay una ruta anterior en el stack de GoRouter.
+    // Cuando se navega con context.push() -> true (muestra flecha atrás)
+    // Cuando se navega con context.go()   -> false (sin flecha, es tab raíz)
+    final canGoBack = context.canPop();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppStrings.catalog),
+        // Botón de regreso explícito: solo aparece si hay historia navegable
+        leading: canGoBack
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                tooltip: 'Regresar',
+                onPressed: () => context.pop(),
+              )
+            : null,
+        automaticallyImplyLeading: false,
+        title: widget.categoryFilter != null
+            ? Consumer<ProductProvider>(
+                builder: (_, p, __) {
+                  // Mostrar nombre de categoría si está disponible
+                  final cat = p.categories
+                      .where((c) => c.id == widget.categoryFilter)
+                      .firstOrNull;
+                  return Text(cat?.name ?? AppStrings.catalog);
+                },
+              )
+            : const Text(AppStrings.catalog),
         actions: [
           IconButton(
             icon: const Icon(Icons.tune_rounded),
+            tooltip: 'Filtros',
             onPressed: () => showModalBottomSheet(
               context: context,
               builder: (_) => const FilterBottomSheet(),
@@ -52,12 +84,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       body: Column(
         children: [
-          // Search bar
+          // Barra de búsqueda
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: TextField(
               controller: _searchCtrl,
-              onChanged: context.read<ProductProvider>().setSearch,
+              onChanged: (value) {
+                context.read<ProductProvider>().setSearch(value);
+                // Refrescar para mostrar/ocultar el botón de limpiar
+                setState(() {});
+              },
               decoration: InputDecoration(
                 hintText: 'Buscar productos...',
                 prefixIcon: const Icon(Icons.search),
@@ -67,25 +103,79 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         onPressed: () {
                           _searchCtrl.clear();
                           context.read<ProductProvider>().setSearch('');
+                          setState(() {});
                         },
                       )
                     : null,
               ),
             ),
           ),
+
+          // Contenido principal
           Expanded(
             child: Consumer<ProductProvider>(
               builder: (_, p, __) {
+                // Cargando
                 if (p.status == ProductStatus.loading) {
                   return const LoadingWidget();
                 }
-                final products = p.filteredProducts;
-                if (products.isEmpty) {
+
+                // Error con mensaje informativo
+                if (p.status == ProductStatus.error) {
                   return Center(
-                    child: Text(AppStrings.noProducts,
-                        style: Theme.of(context).textTheme.bodyLarge),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.wifi_off_rounded,
+                              size: 56, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          Text(
+                            p.errorMessage ?? 'Error al cargar productos',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () =>
+                                p.loadByCategory(widget.categoryFilter),
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
+
+                final products = p.filteredProducts;
+
+                // Sin resultados
+                if (products.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.search_off_rounded,
+                            size: 56, color: Colors.grey),
+                        const SizedBox(height: 12),
+                        Text(
+                          AppStrings.noProducts,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // Grid de productos
                 return GridView.builder(
                   padding: ResponsiveHelper.horizontalPadding(context)
                       .copyWith(top: 12, bottom: 24),

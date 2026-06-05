@@ -9,6 +9,9 @@ abstract class ProductRepository {
   Future<List<ProductModel>> getProducts({String? categoryId});
   Future<List<ProductModel>> getFeaturedProducts();
   Future<List<CategoryModel>> getCategories();
+  Future<void> createProduct(ProductModel product);
+  Future<void> updateProduct(String productId, Map<String, dynamic> data);
+  Future<void> deleteProduct(String productId);
 }
 
 class ProductRepositoryImpl implements ProductRepository {
@@ -25,20 +28,14 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final products =
           await firestoreDatasource.getProducts(categoryId: categoryId);
-      // Guardar en caché local
       await localCache.saveString(
         FirebaseConstants.cachedProductsKey,
         jsonEncode(products.map((p) => p.toMap()).toList()),
       );
       return products;
     } catch (e) {
-      // Fallback a caché offline
       final raw = localCache.getString(FirebaseConstants.cachedProductsKey);
-      if (raw != null) {
-        // Retorna lista vacía con datos en caché básica
-        // Para datos completos se necesita Hive con todos los campos
-        return [];
-      }
+      if (raw != null) return [];
       rethrow;
     }
   }
@@ -50,4 +47,16 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<List<CategoryModel>> getCategories() =>
       firestoreDatasource.getCategories();
+
+  @override
+  Future<void> createProduct(ProductModel product) =>
+      firestoreDatasource.createProduct(product);
+
+  @override
+  Future<void> updateProduct(String productId, Map<String, dynamic> data) =>
+      firestoreDatasource.updateProduct(productId, data);
+
+  @override
+  Future<void> deleteProduct(String productId) =>
+      firestoreDatasource.deleteProduct(productId);
 }

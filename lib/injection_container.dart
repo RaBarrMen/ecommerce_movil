@@ -73,7 +73,11 @@ Future<void> init() async {
 
   // --- Providers ---
   sl.registerFactory(() => AuthProvider(authRepository: sl()));
-  sl.registerFactory(() => ProductProvider(productRepository: sl()));
+  // ProductProvider ahora recibe también StorageRepository para CRUD admin
+  sl.registerFactory(() => ProductProvider(
+        productRepository: sl(),
+        storageRepository: sl(), // ← NUEVO
+      ));
   sl.registerFactory(() => CartProvider(cartRepository: sl()));
   sl.registerFactory(() => OrderProvider(
         orderRepository: sl(),
